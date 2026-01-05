@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Web Counters</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Web Counters</h1>
+    <button id="add-btn" class="primary">＋</button>
+  </header>
+
+  <main>
+    <section id="list" class="card"></section>
+  </main>
+
+  <dialog id="counter-dialog">
+    <form method="dialog" id="counter-form" class="dialog-body">
+      <h2 id="dialog-title">New Counter</h2>
+      <label>
+        <span>Title</span>
+        <input name="title" type="text" required maxlength="120">
+      </label>
+      <label>
+        <span>Target (UTC, RFC3339)</span>
+        <input name="target" type="datetime-local" required>
+      </label>
+      <menu class="actions">
+        <button type="reset">Cancel</button>
+        <button type="submit" class="primary">Save</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <template id="card-template">
+    <article class="counter card">
+      <div class="counter-header">
+        <h3 class="title"></h3>
+        <div class="actions">
+          <button class="icon edit" title="Edit">✎</button>
+          <button class="icon delete" title="Delete">🗑</button>
+        </div>
+      </div>
+      <p class="target"></p>
+      <div class="time">
+        <span class="days">0d</span>
+        <span class="hours">00h</span>
+        <span class="minutes">00m</span>
+        <span class="seconds">00s</span>
+      </div>
+    </article>
+  </template>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>
+
