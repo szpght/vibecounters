@@ -20,13 +20,13 @@ form.addEventListener('submit', async (e) => {
   if (!payload.title || !payload.target) return;
 
   if (editingId) {
-    await fetch(`/api/counters/${editingId}`, {
+    await apiFetch(`api/counters/${editingId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
   } else {
-    await fetch('/api/counters', {
+    await apiFetch('api/counters', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -50,8 +50,17 @@ function closeDialog() {
   editingId = null;
 }
 
+// Helper to call the API relative to the document's <base> href.
+// We intentionally avoid leading slashes on `path` so it's resolved under the base href.
+const _baseHref = document.querySelector('base')?.href || document.baseURI;
+function apiFetch(path, init) {
+  const rel = path.startsWith('/') ? path.slice(1) : path;
+  const url = new URL(rel, _baseHref);
+  return fetch(url.href, init);
+}
+
 async function load() {
-  const res = await fetch('/api/counters');
+  const res = await apiFetch('api/counters');
   counters = await res.json();
   render();
 }
@@ -96,7 +105,7 @@ function render() {
 
     el.querySelector('.edit').addEventListener('click', () => openDialog(counter));
     el.querySelector('.delete').addEventListener('click', async () => {
-      await fetch(`/api/counters/${counter.id}`, { method: 'DELETE' });
+      await apiFetch(`api/counters/${counter.id}`, { method: 'DELETE' });
       await load();
     });
 
