@@ -323,7 +323,8 @@ async fn serve_static(uri: Uri) -> impl IntoResponse {
         return Html(get_asset("index.html")).into_response();
     }
 
-    let trimmed = path.trim_start_matches('/');
+    // TODO better solution
+    let trimmed = path.trim_start_matches('/').split("/").last().unwrap();
     if let Some(file) = STATIC_DIR.get_file(trimmed) {
         let body: Vec<u8> = file.contents().into();
         let mime = content_type_for(trimmed);
