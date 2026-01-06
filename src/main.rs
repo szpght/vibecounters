@@ -191,9 +191,16 @@ async fn main() -> Result<(), anyhow::Error> {
 }
 
 fn init_tracing() {
+    // Configure tracing_subscriber to always write to stderr (console) and use
+    // RUST_LOG / the environment filter when present. If no filter is provided
+    // fall back to INFO so the app emits useful runtime messages by default.
+    let env_filter = tracing_subscriber::EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info"));
+
     let _ = tracing_subscriber::fmt()
-        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .with_env_filter(env_filter)
         .with_target(false)
+        .with_writer(std::io::stdout)
         .try_init();
 }
 
