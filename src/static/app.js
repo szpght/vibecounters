@@ -58,7 +58,6 @@ async function load() {
 
 function render() {
   listEl.innerHTML = '';
-  const now = Date.now();
   for (const counter of counters) {
     const node = template.content.cloneNode(true);
     const el = node.querySelector('.counter');
