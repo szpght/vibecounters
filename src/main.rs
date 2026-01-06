@@ -4,7 +4,7 @@ use axum::{
     extract::{Path as AxumPath, State},
     http::{header, HeaderValue, StatusCode, Uri},
     response::{Html, IntoResponse, Response},
-    routing::{delete, get, post, put},
+    routing::{get, put},
     Json, Router,
 };
 use include_dir::{include_dir, Dir};
@@ -161,6 +161,7 @@ async fn main() -> Result<(), anyhow::Error> {
     init_tracing();
 
     let data_path = data_file_path();
+    info!("COUNTERS_FILE = {}", data_path.display());
     let counters = load_counters(&data_path)?;
     let state = AppState {
         counters: Arc::new(RwLock::new(counters)),
@@ -179,7 +180,10 @@ async fn main() -> Result<(), anyhow::Error> {
         .layer(CompressionLayer::new())
         .layer(TraceLayer::new_for_http());
 
-    let addr = std::net::SocketAddr::from(([0, 0, 0, 0], 3000));
+    // Read bind address and port from environment with sensible defaults.
+    // ADDR defaults to 0.0.0.0, PORT defaults to 3000. The values are combined and parsed
+    // as a SocketAddr (e.g. "0.0.0.0:3000" or "[::1]:3000").
+    let addr = get_listen_addr()?;
     info!("listening on http://{}", addr);
     axum::serve(tokio::net::TcpListener::bind(addr).await?, app).await?;
 
@@ -191,6 +195,17 @@ fn init_tracing() {
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
         .with_target(false)
         .try_init();
+}
+
+fn get_listen_addr() -> Result<std::net::SocketAddr, anyhow::Error> {
+    let host = std::env::var("ADDR").unwrap_or_else(|_| "0.0.0.0".to_string());
+    let port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
+    let candidate = format!("{}:{}", host, port);
+    // Log which env values were used for startup to make debugging easier.
+    info!("startup: ADDR='{}' PORT='{}' => {}", host, port, candidate);
+    candidate
+        .parse()
+        .map_err(|e| anyhow::anyhow!("invalid listen address '{}': {}", candidate, e))
 }
 
 fn data_file_path() -> PathBuf {
